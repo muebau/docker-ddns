@@ -56,9 +56,9 @@ The handlers will listen on:
 * /v3/update
 
 Basic URL scheme:
-
+```
 https://{user}:{password}@ddns.domain.example/{handler}?hostname={hostname}&myip={IP Address}
-
+```
 So a request to:
 ```
 https://sampleuser:secret@ddns.domain.example/update?hostname=test.ddns.domain.example
@@ -76,10 +76,10 @@ https://sampleuser:secret@ddns.domain.example/update?hostname=test.ddns.domain.e
 ``` 
 
 would update:
-DNS Record: "test.ddns.domain.example"
-user: "sampleuser"
-password: "secret"
-IP: whatever IP the request came from OR it set "1.1.1.1" in this example
+* DNS Record: "test.ddns.domain.example"
+* user: "sampleuser"
+* password: "secret"
+* IP: whatever IP the request came from OR it set "1.1.1.1" in this example
 
 For the DynDNS compatible fields please see Dyn's documentation here: 
 
@@ -89,23 +89,30 @@ https://help.dyn.com/remote-access-api/perform-update/
 
 #### Screen shots
 
+##### Hosts
 ![hosts view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-hosts.png)
+##### Edit host
 ![edit host view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-edit-host.png)
+##### Log
 ![log view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-log.png)
 
 #### Examples
 
 An example on the ddclient (Linux DDNS client) based Ubiquiti router line:
 
+```
 set service dns dynamic interface eth0 service dyndns host-name <your-ddns-hostname-to-be-updated>
 set service dns dynamic interface eth0 service dyndns login <username>
 set service dns dynamic interface eth0 service dyndns password <password>
 set service dns dynamic interface eth0 service dyndns protocol dyndns2
 set service dns dynamic interface eth0 service dyndns server <your-ddns-server>
+```
 
 Optional if you used this behind an HTTPS reverse proxy like I do:
 
+```
 set service dns dynamic interface eth0 service dyndns options ssl=true
+```
 
 This also means that DDCLIENT works out of the box and Linux based devices should work.
 
