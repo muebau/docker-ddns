@@ -3,7 +3,7 @@
 This package allows you to set up a dynamic DNS server that allows you to connect to
 devices at home from anywhere in the world. All you need is a cheap VPS, a domain and access to it's nameserver.
 
-![Connect to your NAS from work](https://raw.githubusercontent.com/muebau/docker-ddns/develop/connect-to-your-nas-from-work.png)
+![Connect to your NAS from work](/connect-to-your-nas-from-work.png)
 
 ## Installation
 
@@ -90,11 +90,12 @@ https://help.dyn.com/remote-access-api/perform-update/
 #### Screen shots
 
 ##### Hosts
-![hosts view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-hosts.png)
+![hosts view](/doc-webif-hosts.png)
+
 ##### Edit host
-![edit host view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-edit-host.png)
+![edit host view](/doc-webif-edit-host.png)
 ##### Log
-![log view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-log.png)
+![log view](/doc-webif-log.png)
 
 #### Examples
 
