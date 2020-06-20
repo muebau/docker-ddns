@@ -6,7 +6,7 @@
 This package allows you to set up a dynamic DNS server that allows you to connect to
 devices at home from anywhere in the world. All you need is a cheap VPS, a domain and access to it's nameserver.
 
-![Connect to your NAS from work](https://raw.githubusercontent.com/dprandzioch/docker-ddns/develop/connect-to-your-nas-from-work.png)
+![Connect to your NAS from work](https://raw.githubusercontent.com/benjaminbear/docker-ddns/develop/connect-to-your-nas-from-work.png)
 
 ## Installation
 
@@ -21,11 +21,12 @@ docker run -it -d \
     -p 8080:8080 \
     -p 53:53 \
     -p 53:53/udp \
-    -e SHARED_SECRET=changeme \
-    -e ZONE=example.org \
-    -e RECORD_TTL=3600 \
+    -e DDNS_ADMIN_LOGIN=admin:123455546. \
+    -e DDNS_DOMAIN=dyndns.example.com \
+    -e DDNS_PARENT_NS=ns.example.com \
+    -e DDNS_DEFAULT_TTL=3600 \
     --name=dyndns \
-    davd/docker-ddns:latest
+    bbaerthlein/docker-ddns:0.9
 ```
 
 If you want to persist DNS configuration across container recreation, add `-v /somefolder:/var/cache/bind`. If you are experiencing any 
@@ -33,12 +34,12 @@ issues updating DNS configuration using the API (`NOTAUTH` and `SERVFAIL`), make
 persistent storage (e.g. `chmod -R a+w /somefolder`).
 
 You can also use Compose / Swarm to set up this project. For more information and an example `docker-compose.yml` with persistent data 
-storage, please refer to this file: https://github.com/dprandzioch/docker-ddns/blob/master/docker-compose.yml
+storage, please refer to this file: https://github.com/benjaminbear/docker-ddns/blob/master/docker-compose.yml
 
 ### Build from source / GitHub
 
 ```
-git clone https://github.com/dprandzioch/docker-ddns
+git clone https://github.com/benjaminbear/docker-ddns
 git checkout master # Make sure to build the latest stable release
 cd docker-ddns
 $EDITOR envfile
@@ -75,6 +76,56 @@ http://myhost.mydomain.tld:8080/update?secret=changeme&domain=foo&addr=1.2.3.4
    result in `foo.example.org`. Could also be multiple domains that should be
    redirected to the same domain separated by comma, so "foo,bar"
 * `addr`: IPv4 or IPv6 address of the name record
+
+
+For the DynDNS compatible fields please see Dyn's documentation here: 
+
+```
+https://help.dyn.com/remote-access-api/perform-update/
+```
+
+
+### DynDNS compatible API
+
+This package contains a DynDNS compatible handler for convenience and for use cases
+where clients cannot be modified to use the JSON responses and/or URL scheme outlined
+above.
+
+This has been tested with a number of routers. Just point the router to your DDNS domain
+for updates.
+
+The handlers will listen on:
+* /nic/update
+* /v2/update
+* /v3/update
+
+
+**The username is not validated at all so you can use anything as a username**
+**Password is the shared secret provided as an ENV variable**
+
+#### Examples
+
+An example on the ddclient (Linux DDNS client) based Ubiquiti router line:
+
+set service dns dynamic interface eth0 service dyndns host-name <your-ddns-hostname-to-be-updated>
+set service dns dynamic interface eth0 service dyndns login <anything-as-username-is-not-validated>
+set service dns dynamic interface eth0 service dyndns password <shared-secret>
+set service dns dynamic interface eth0 service dyndns protocol dyndns2
+set service dns dynamic interface eth0 service dyndns server <your-ddns-server>
+
+Optional if you used this behind an HTTPS reverse proxy like I do:
+
+set service dns dynamic interface eth0 service dyndns options ssl=true
+
+This also means that DDCLIENT works out of the box and Linux based devices should work.
+
+D-Link DIR-842:
+
+Another router that has been tested is from the D-Link router line where you need to fill the 
+details in on the Web Interface. The values are self-explanatory. Under the server (once you chosen Manual)
+you need to enter you DDNS server's hostname or IP. The protocol used by the router will be the 
+dyndns2 by default and cannot be changed.
+
 
 ## Accessing the REST API log
 
