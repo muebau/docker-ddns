@@ -1,17 +1,17 @@
 version: '3'
 services:
   ddns:
-    image: bbaerthlein/docker-ddns:latest
-    #build: .
+    image: muebau/docker-ddns:latest
     restart: always
     environment:
-      RECORD_TTL: 60
-      ZONE: example.org
-      SHARED_SECRET: changeme
+      DDNS_ADMIN_LOGIN: "admin:secret"
+      DDNS_DOMAIN: ddns.domain.example
+      DDNS_PARENT_NS: ns.domain.example
+      DDNS_DEFAULT_TTL: 60
     ports:
       - "53:53"
       - "53:53/udp"
       - "8080:8080"
-#    volumes:
-#       - ./bind-data:/var/cache/bind
-#       - ./database:/root/dyndns/database
+    volumes:
+       - ./bind-data:/var/cache/bind
+       - ./database:/root/database

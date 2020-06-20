@@ -1,12 +1,9 @@
 # Dynamic DNS with Docker, Go and Bind9
 
-![DockerHub build status](https://dockerbuildbadges.quelltext.eu/status.svg?organization=davd&repository=docker-ddns)
-![Travis build status](https://travis-ci.com/dprandzioch/docker-ddns.svg?branch=master)
-
 This package allows you to set up a dynamic DNS server that allows you to connect to
 devices at home from anywhere in the world. All you need is a cheap VPS, a domain and access to it's nameserver.
 
-![Connect to your NAS from work](https://raw.githubusercontent.com/benjaminbear/docker-ddns/develop/connect-to-your-nas-from-work.png)
+![Connect to your NAS from work](https://raw.githubusercontent.com/muebau/docker-ddns/develop/connect-to-your-nas-from-work.png)
 
 ## Installation
 
@@ -21,12 +18,12 @@ docker run -it -d \
     -p 8080:8080 \
     -p 53:53 \
     -p 53:53/udp \
-    -e DDNS_ADMIN_LOGIN=admin:123455546. \
-    -e DDNS_DOMAIN=dyndns.example.com \
-    -e DDNS_PARENT_NS=ns.example.com \
-    -e DDNS_DEFAULT_TTL=3600 \
+    -e DDNS_ADMIN_LOGIN="admin:secret"
+    -e DDNS_DOMAIN=ddns.domain.example
+    -e DDNS_PARENT_NS=ns.domain.example
+    -e DDNS_DEFAULT_TTL=60
     --name=dyndns \
-    bbaerthlein/docker-ddns:0.9
+    muebau/docker-ddns
 ```
 
 If you want to persist DNS configuration across container recreation, add `-v /somefolder:/var/cache/bind`. If you are experiencing any 
@@ -34,20 +31,7 @@ issues updating DNS configuration using the API (`NOTAUTH` and `SERVFAIL`), make
 persistent storage (e.g. `chmod -R a+w /somefolder`).
 
 You can also use Compose / Swarm to set up this project. For more information and an example `docker-compose.yml` with persistent data 
-storage, please refer to this file: https://github.com/benjaminbear/docker-ddns/blob/master/docker-compose.yml
-
-### Build from source / GitHub
-
-```
-git clone https://github.com/benjaminbear/docker-ddns
-git checkout master # Make sure to build the latest stable release
-cd docker-ddns
-$EDITOR envfile
-make deploy
-```
-
-Make sure to change all environment variables in `envfile` to match your needs. Some more information can be found here: 
-https://www.davd.eu/build-your-own-dynamic-dns-in-5-minutes/
+storage, please refer to this file: https://github.com/muebau/docker-ddns/blob/master/docker-compose.yml
 
 ## Exposed ports
 
@@ -55,28 +39,47 @@ Afterwards you have a running docker container that exposes three ports:
 
 * 53/TCP    -> DNS
 * 53/UDP    -> DNS
-* 8080/TCP  -> Management REST API
+* 8080/TCP  -> Management REST API & Web interface (NO HTTPS!!!)
 
+## HTTPS
 
-## Using the API
+It is highly recommended to put a reverse proxy before the API. A good example with automatic letsencrypt certificates is https://github.com/nginx-proxy/docker-letsencrypt-nginx-proxy-companion
 
-That package features a simple REST API written in Go, that provides a simple
-interface, that almost any router that supports Custom DDNS providers can
-attach to (e.g. Fritz!Box). It is highly recommended to put a reverse proxy
-before the API.
+### DynDNS compatible API
 
-It provides one single GET request, that is used as follows:
+The API follows the scheme of the poplular dyndns.org.
 
-http://myhost.mydomain.tld:8080/update?secret=changeme&domain=foo&addr=1.2.3.4
+The handlers will listen on:
+* /update
+* /nic/update
+* /v2/update
+* /v3/update
 
-### Fields
+Basic URL scheme:
 
-* `secret`: The shared secret set in `envfile`
-* `domain`: The subdomain to your configured domain, in this example it would
-   result in `foo.example.org`. Could also be multiple domains that should be
-   redirected to the same domain separated by comma, so "foo,bar"
-* `addr`: IPv4 or IPv6 address of the name record
+https://{user}:{password}@ddns.domain.example/{handler}?hostname={hostname}&myip={IP Address}
 
+So a request to:
+```
+https://sampleuser:secret@ddns.domain.example/update?hostname=test.ddns.domain.example
+OR
+https://sampleuser:secret@ddns.domain.example/v2/update?hostname=test.ddns.domain.example
+OR
+https://sampleuser:secret@ddns.domain.example/v3/update?hostname=test.ddns.domain.example
+OR
+https://sampleuser:secret@ddns.domain.example/nic/update?hostname=test.ddns.domain.example
+```
+optional with ip set explicitly:
+
+```
+https://sampleuser:secret@ddns.domain.example/update?hostname=test.ddns.domain.example&myip=1.1.1.1
+``` 
+
+would update:
+DNS Record: "test.ddns.domain.example"
+user: "sampleuser"
+password: "secret"
+IP: whatever IP the request came from OR it set "1.1.1.1" in this example
 
 For the DynDNS compatible fields please see Dyn's documentation here: 
 
@@ -84,32 +87,19 @@ For the DynDNS compatible fields please see Dyn's documentation here:
 https://help.dyn.com/remote-access-api/perform-update/
 ```
 
+#### Screen shots
 
-### DynDNS compatible API
-
-This package contains a DynDNS compatible handler for convenience and for use cases
-where clients cannot be modified to use the JSON responses and/or URL scheme outlined
-above.
-
-This has been tested with a number of routers. Just point the router to your DDNS domain
-for updates.
-
-The handlers will listen on:
-* /nic/update
-* /v2/update
-* /v3/update
-
-
-**The username is not validated at all so you can use anything as a username**
-**Password is the shared secret provided as an ENV variable**
+![hosts view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-hosts.png)
+![edit host view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-edit-host.png)
+![log view](https://raw.githubusercontent.com/muebau/docker-ddns/develop/doc-webif-log.png)
 
 #### Examples
 
 An example on the ddclient (Linux DDNS client) based Ubiquiti router line:
 
 set service dns dynamic interface eth0 service dyndns host-name <your-ddns-hostname-to-be-updated>
-set service dns dynamic interface eth0 service dyndns login <anything-as-username-is-not-validated>
-set service dns dynamic interface eth0 service dyndns password <shared-secret>
+set service dns dynamic interface eth0 service dyndns login <username>
+set service dns dynamic interface eth0 service dyndns password <password>
 set service dns dynamic interface eth0 service dyndns protocol dyndns2
 set service dns dynamic interface eth0 service dyndns server <your-ddns-server>
 
@@ -126,34 +116,6 @@ details in on the Web Interface. The values are self-explanatory. Under the serv
 you need to enter you DDNS server's hostname or IP. The protocol used by the router will be the 
 dyndns2 by default and cannot be changed.
 
-
-## Accessing the REST API log
-
-Just run
-
-```
-docker logs -f dyndns
-```
-
-## DNS setup
-
-To provide a little help... To your "real" domain, like `domain.tld`, you
-should add a subdomain that is delegated to this DDNS server like this:
-
-```
-dyndns                   IN NS      ns
-ns                       IN A       <put ipv4 of dns server here>
-ns                       IN AAAA    <optional, put ipv6 of dns server here>
-```
-
-Your management API should then also be accessible through
-
-```
-http://ns.domain.tld:8080/update?...
-```
-
-If you provide `foo` as a domain when using the REST API, the resulting domain
-will then be `foo.dyndns.domain.tld`.
 
 ## Common pitfalls
 
