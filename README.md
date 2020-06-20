@@ -3,7 +3,7 @@
 This package allows you to set up a dynamic DNS server that allows you to connect to
 devices at home from anywhere in the world. All you need is a cheap VPS, a domain and access to it's nameserver.
 
-![Connect to your NAS from work](https://github.com/muebau/docker-ddns/blob/master/connect-to-your-nas-from-work.png)
+![Connect to your NAS from work](https://raw.githubusercontent.com/muebau/docker-ddns/master/connect-to-your-nas-from-work.png)
 
 ## Installation
 
@@ -31,7 +31,7 @@ issues updating DNS configuration using the API (`NOTAUTH` and `SERVFAIL`), make
 persistent storage (e.g. `chmod -R a+w /somefolder`).
 
 You can also use Compose / Swarm to set up this project. For more information and an example `docker-compose.yml` with persistent data 
-storage, please refer to this file: https://github.com/muebau/docker-ddns/blob/master/docker-compose.yml
+storage, please refer to this file: https://raw.githubusercontent.com/muebau/docker-ddns/master/docker-compose.yml
 
 ## Exposed ports
 
@@ -90,12 +90,12 @@ https://help.dyn.com/remote-access-api/perform-update/
 #### Screen shots
 
 ##### Hosts
-![hosts view](https://github.com/muebau/docker-ddns/blob/master/doc-webif-hosts.png)
+![hosts view](https://raw.githubusercontent.com/muebau/docker-ddns/master/doc-webif-hosts.png)
 
 ##### Edit host
-![edit host view](https://github.com/muebau/docker-ddns/blob/master/doc-webif-edit-host.png)
+![edit host view](https://raw.githubusercontent.com/muebau/docker-ddns/master/doc-webif-edit-host.png)
 ##### Log
-![log view](https://github.com/muebau/docker-ddns/blob/master/doc-webif-log.png)
+![log view](https://raw.githubusercontent.com/muebau/docker-ddns/master/doc-webif-log.png)
 
 #### Examples
 
